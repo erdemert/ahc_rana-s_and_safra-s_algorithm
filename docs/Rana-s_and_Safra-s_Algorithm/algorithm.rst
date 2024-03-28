@@ -19,30 +19,176 @@ Safra's algorithm is another very important algorithm as a distributed solution 
 Distributed Algorithm: |Rana-s and Safra-s Algorithm| 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-An example distributed algorithm for broadcasting on an undirected graph is presented in  :ref:`Algorithm <BlindFloodingAlgorithmLabel>`.
+Termination detection algorithms are used in distributed systems to determine when all processes have completed their tasks or computations. These algorithms typically involve processes exchanging messages to signal their termination status, with each process maintaining information about the termination state of others. Once all processes have acknowledged their termination, the system can conclude that all computations have finished. Termination detection is crucial for ensuring the orderly termination of distributed processes and for coordinating further actions in the system.In this section, we delve into termination detection algorithms, focusing on two prominent ones: Rana's algorithm and Safra's algorithm. We will present the principles behind these algorithms, their implementation details, and compare their strengths and weaknesses.
 
-.. _BlindFloodingAlgorithmLabel:
+**Rana's Termination Detection Algorithm:**
+Rana's algorithm provides a distributed approach to termination detection, allowing processes in a distributed system to coordinate and terminate gracefully once all tasks have been completed.
+
+    1. Initialization:
+        - Each process initializes its local termination flag to false.
+        - A counter is set to track the number of termination messages received.
+        - A termination vector is initialized to keep track of the termination status of other processes.
+    2. Sending Termination Messages:
+        - When a process believes it has completed its task, it sends a termination message to all other processes except itself.
+        - This message indicates to other processes that the sender has terminated its work.
+    3. Receiving Termination Messages:
+        - Upon receiving a termination message from another process, the receiving process updates its termination vector to indicate that the sender has terminated.
+        - It also increments a counter to keep track of the number of termination messages received.
+    4. Local Termination Detection:
+        - After updating its termination vector upon receiving a termination message, a process checks whether all other processes have terminated by examining the termination vector.
+        - If all elements in the termination vector are true (indicating all processes have terminated), the local termination flag of the process is set to true.
+    5. Main Loop and Computation:
+        - The algorithm typically operates within a main loop where computations are performed.
+        - After completing its portion of work, a process checks if termination conditions are met and sends termination messages accordingly.
+    6. Finalization:
+        - Once a process detects local termination (all processes have terminated), it sends termination messages to all other processes to inform them of its own termination.
+        - It then waits for acknowledgment from all other processes to ensure that they have received the termination message.
+        - Finally, the process can safely terminate.
+    7. Termination Acknowledgment:
+        - Processes wait for acknowledgment from all other processes after sending termination messages to ensure that the termination is globally acknowledged.
+        - This step ensures reliable communication and coordination among processes.
+
+Rana's termination detection algorithm is presented in :ref:`Algorithm <RanasAlgorithm>`.
+
+.. _RanasAlgorithm:
 
 .. code-block:: RST
     :linenos:
-    :caption: Blind flooding algorithm.
+    :caption: Rana's algorithm.
+    
+    // Initialize variables and data structures
+    initialize:
+        set local_termination_flag to false
+        set termination_messages_received to 0
+        set total_processes to N
+        initialize termination_vector with all elements as false
+
+    // Send termination messages to other processes
+    send_termination_message():
+        for each process p from 1 to N:
+            if p is not the current process:
+                send "TERMINATE" message from current process to process p
+
+        // Wait for acknowledgment from all other processes
+        while termination_messages_received < total_processes - 1:
+            wait_for_message()
+
+    // Receive termination messages from other processes
+    receive_termination_message(sender_process):
+        // Update termination status of the sender process
+        set termination_vector[sender_process] to true
+        increment termination_messages_received
+
+        // Check if all processes have terminated
+        if termination_messages_received equals total_processes - 1:
+            set local_termination_flag to true
+
+    // Main function
+    main():
+        // Initialization
+        call initialize()
+
+        // Main loop
+        while local_termination_flag is false:
+            // Perform computation
+
+            // Check if computation is complete
+            if computation is finished:
+                // Send termination message to other processes
+                call send_termination_message()
+
+        // Finalization
+        // Send termination messages to all other processes
+        call send_termination_message()
+
+        // Wait for acknowledgment from all other processes
+        while termination_messages_received < total_processes - 1:
+            wait_for_message()
+
+        // Terminate
+        terminate()
+
+
+**Safra's Termination Detection Algorithm:** 
+Safra's algorithm provides a robust method for detecting termination in distributed systems by constructing and analyzing a global wait-for graph. It ensures that all processes have completed their tasks and there are no potential deadlocks before declaring termination.
+    
+    1. Local State Maintenance:
+        - Each process in the distributed system maintains a local state indicating whether it has terminated or not.
+        - Initially, all processes are assumed to be active, meaning they are actively executing tasks.
+    2. Message Passing:
+        - Processes exchange messages with their neighboring processes to gather information about their status and dependencies.
+        - Messages exchanged typically include marker messages and acknowledgment messages.
+    3. Marker Propagation:
+        - To initiate the termination detection process, a special marker message is sent by an initiator process. This marker message is used to mark the beginning of the termination detection phase.
+        - Upon receiving a marker message from a neighbor, a process records the receipt of the marker and may initiate further marker propagation.
+    4. Recording Dependencies:
+        - As marker messages are exchanged, processes record information about the dependencies between them.
+        - Each process maintains a set of incoming and outgoing edges in the global wait-for graph based on the marker messages it has received.
+    5. Cycle Detection:
+        - Safra's algorithm ensures that no cycles exist in the global wait-for graph. The presence of a cycle would indicate the possibility of a deadlock in the distributed system.
+        - Processes collaborate to ensure that the global wait-for graph remains acyclic.
+    6. Termination Detection:
+        - Termination is detected when all processes have determined that there are no cycles in the global wait-for graph.
+        - Once a process has received acknowledgment messages from all of its incoming neighbors, it marks itself as passive, indicating that it has terminated.
+        - The termination detection process continues until all processes have marked themselves as passive and the global wait-for graph is confirmed to be acyclic.
+
+Safra's termination detection algorithm is presented in :ref:`Algorithm <SafrasAlgorithm>`.
+
+.. _SafrasAlgorithm:
+
+.. code-block:: RST
+    :linenos:
+    :caption: Safra's algorithm.
     
 
-    Implements: BlindFlooding Instance: cf
-    Uses: LinkLayerBroadcast Instance: lbc
-    Events: Init, MessageFromTop, MessageFromBottom
-    Needs:
+    Initialization:
+    For each process P:
+        Set local state of P to active
+        Initialize an empty set of received messages for P
+        Initialize an empty set of outgoing edges for P
 
-    OnInit: () do
-    
-    OnMessageFromBottom: ( m ) do
-        Trigger lbc.Broadcast ( m )
-    
-    OnMessageFromTop: ( m ) do
-        Trigger lbc.Broadcast ( m )
+    Termination Detection:
+    Repeat until termination is detected:
+        For each process P:
+            If local state of P is active:
+                Send a marker message to each neighboring process Q
+                Wait to receive marker messages from all incoming neighbors
 
+            Upon receiving a marker message from neighbor Q:
+                Record the marker message from Q
+                Add a directed edge from Q to P in P's outgoing edges
 
-Do not forget to explain the algorithm line by line in the text.
+            If received marker messages from all incoming neighbors:
+                Mark local state of P as passive
+                If P is not the initiator:
+                    Send marker messages along outgoing edges
+                Else:
+                    Check if the global wait-for graph is acyclic:
+                        If acyclic:
+                            Termination detected
+                        Else:
+                            Continue
+
+    Check for Cycle in the Global Wait-for Graph:
+    Function IsAcyclic(graph):
+        Initialize a set of visited nodes
+        Initialize a set of current nodes
+
+        For each node in graph:
+            If node has not been visited:
+                If Visit(node, visited, current):
+                    Return false (cycle detected)
+
+        Return true (no cycle detected)
+
+    Function Visit(node, visited, current):
+        If node is in current:
+            Return true (cycle detected)
+        If node is in visited:
+            Return false
+
+        Add node to current
+        Add node to visited
 
 Example
 ~~~~~~~~
@@ -52,84 +198,37 @@ Provide an example for the distributed algorithm.
 Correctness
 ~~~~~~~~~~~
 
-Present Correctness, safety, liveness and fairness proofs.
+**Correctness of Rana's Algorithm**
+
+Correctness Proof: Initially, all local termination flags are false, and the termination vector is initialized with all elements set to false.  Upon receiving termination messages from all other processes, a process sets its local termination flag to true. It sends termination messages to all other processes, indicating its own termination. This process repeats until all processes have set their local termination flags to true. Once all processes have set their local termination flags to true, the algorithm terminates.
+
+Safety Proof: A process sets its local termination flag to true only if it has received termination messages from all other processes. This ensures that termination is detected only when all processes have indeed terminated their tasks. Each process waits for acknowledgment from all other processes after sending termination messages. This ensures that termination is communicated reliably among processes.
+
+Liveness Proof: Each process sends termination messages to all other processes upon completing its task. Eventually, every process will receive termination messages from all other processes. nce a process receives termination messages from all other processes, it sets its local termination flag to true and sends termination messages to all other processes. This process repeats until all processes have set their local termination flags to true. Since every process sends termination messages to all other processes, eventually, all processes will receive termination messages from every other process, causing them to set their local termination flags to true. Therefore, the algorithm eventually detects termination once all processes have completed their tasks.
+
+Fairness Proof: The algorithm ensures symmetric message exchange among processes, where each process sends termination messages to all other processes and waits for acknowledgment. This ensures fairness in communication. All processes follow the same steps to detect termination. There is no bias or preferential treatment given to any process. All processes wait for acknowledgment from all other processes after sending termination messages. This ensures that no process is left behind in the termination process, ensuring fairness.
+
+**Correctness of Safra's Algorithm**
+
+Correctness Proof: The algorithm constructs a global wait-for graph based on marker messages exchanged between processes. Each process records dependencies and constructs its portion of the graph accurately. Safra's algorithm ensures that the global wait-for graph remains acyclic throughout the termination detection process. This guarantees that deadlock situations are detected accurately. Processes mark themselves as passive (terminated) only when they have received acknowledgment messages from all incoming neighbors. This process continues until all processes have marked themselves as passive. Termination is declared only when all processes have indeed terminated, ensuring correctness. A formal proof by contradiction can be constructed to demonstrate that any assumption of incorrect termination detection leads to a contradiction, thus establishing the correctness of the algorithm.
+
+Safety Proof: The algorithm ensures that all processes reach the same conclusion regarding termination. This property is guaranteed by the consistent construction of the global wait-for graph and the uniform termination detection criteria. Processes accurately record dependencies based on the receipt of marker messages, ensuring that the global wait-for graph correctly represents the dependency relationships between processes. By ensuring the absence of cycles in the global wait-for graph, Safra's algorithm prevents the occurrence of deadlocks, contributing to the safety of the distributed system.
+
+Liveness Proof: The algorithm makes progress towards termination detection by propagating marker messages and updating local states. Processes continue to exchange messages and update their states until termination is detected. Safra's algorithm guarantees that termination detection eventually occurs, regardless of the initial state of the distributed system or the timing of message exchanges. This property ensures the eventual resolution of termination detection.
+
+Fairness Proof: All processes participate equally in the termination detection process by exchanging marker messages and updating their states based on received messages. There is no bias in the treatment of processes. The algorithm exhibits symmetry in its operation, meaning that processes follow the same rules and procedures for termination detection. This symmetry ensures fairness in the treatment of processes.
 
 
 Complexity 
 ~~~~~~~~~~
+**Complexity of Rana's Algorithm**
 
-Present theoretic complexity results in terms of number of messages and computational complexity.
+Time complexity of the Rana's Algorithm is O(N^2) where N is the total number of processes.
 
+Message complexity of the Rana's Algorithm is O(N^2) where N is the total number of processes.
 
+**Complexity of Safra's Algorithm**
 
+Time complexity of the Safra's Algorithm is O(N^2) where N is the total number of processes.
 
-.. admonition:: EXAMPLE 
-
-    Snapshot algorithms are fundamental tools in distributed systems, enabling the capture of consistent global states during system execution. These snapshots provide insights into the system's behavior, facilitating various tasks such as debugging, recovery from failures, and monitoring for properties like deadlock or termination. In this section, we delve into snapshot algorithms, focusing on two prominent ones: the Chandy-Lamport algorithm and the Lai-Yang algorithm. We will present the principles behind these algorithms, their implementation details, and compare their strengths and weaknesses.
-
-    **Chandy-Lamport Snapshot Algorithm:**
-
-    The Chandy-Lamport :ref:`Algorithm <ChandyLamportSnapshotAlgorithm>` [Lamport1985]_ , proposed by Leslie Lamport and K. Mani Chandy, aims to capture a consistent global state of a distributed system without halting its execution. It operates by injecting markers into the communication channels between processes, which propagate throughout the system, collecting local states as they traverse. Upon reaching all processes, these markers signify the completion of a global snapshot. This algorithm requires FIFO channels. There are no failures and all messages arrive intact and only once. Any process may initiate the snapshot algorithm. The snapshot algorithm does not interfere with the normal execution of the processes. Each process in the system records its local state and the state of its incoming channels.
-
-    1. **Marker Propagation:** When a process initiates a snapshot, it sends markers along its outgoing communication channels.
-    2. **Recording Local States:** Each process records its local state upon receiving a marker and continues forwarding it.
-    3. **Snapshot Construction:** When a process receives markers from all incoming channels, it captures its local state along with the incoming messages as a part of the global snapshot.
-    4. **Termination Detection:** The algorithm ensures that all markers have traversed the system, indicating the completion of the snapshot.
-
-
-    .. _ChandyLamportSnapshotAlgorithm:
-
-    .. code-block:: RST
-        :linenos:
-        :caption: Chandy-Lamport Snapshot Algorithm [Fokking2013]_.
-                
-        bool recordedp, markerp[c] for all incoming channels c of p; 
-        mess-queue statep[c] for all incoming channels c of p;
-
-        If p wants to initiate a snapshot 
-            perform procedure TakeSnapshotp;
-
-        If p receives a basic message m through an incoming channel c0
-        if recordedp = true and markerp[c0] = false then 
-            statep[c0] ← append(statep[c0],m);
-        end if
-
-        If p receives ⟨marker⟩ through an incoming channel c0
-            perform procedure TakeSnapshotp;
-            markerp[c0] ← true;
-            if markerp[c] = true for all incoming channels c of p then
-                terminate; 
-            end if
-
-        Procedure TakeSnapshotp
-        if recordedp = false then
-            recordedp ← true;
-            send ⟨marker⟩ into each outgoing channel of p; 
-            take a local snapshot of the state of p;
-        end if
-
-
-    **Example**
-
-    DRAW FIGURES REPRESENTING THE EXAMPLE AND EXPLAIN USING THE FIGURE. Imagine a distributed system with three processes, labeled Process A, Process B, and Process C, connected by communication channels. When Process A initiates a snapshot, it sends a marker along its outgoing channel. Upon receiving the marker, Process B marks its local state and forwards the marker to Process C. Similarly, Process C marks its state upon receiving the marker. As the marker propagates back through the channels, each process records the messages it sends or receives after marking its state. Finally, once the marker returns to Process A, it collects the markers and recorded states from all processes to construct a consistent global snapshot of the distributed system. This example demonstrates how the Chandy-Lamport algorithm captures a snapshot without halting the system's execution, facilitating analysis and debugging in distributed environments.
-
-
-    **Correctness:**
-    
-    *Termination (liveness)*: As each process initiates a snapshot and sends at most one marker message, the snapshot algorithm activity terminates within a finite timeframe. If process p has taken a snapshot by this point, and q is a neighbor of p, then q has also taken a snapshot. This is because the marker message sent by p has been received by q, prompting q to take a snapshot if it hadn't already done so. Since at least one process initiated the algorithm, at least one process has taken a snapshot; moreover, the network's connectivity ensures that all processes have taken a snapshot [Tel2001]_.
-
-    *Correctness*: We need to demonstrate that the resulting snapshot is feasible, meaning that each post-shot (basic) message is received during a post-shot event. Consider a post-shot message, denoted as m, sent from process p to process q. Before transmitting m, process p captured a local snapshot and dispatched a marker message to all its neighbors, including q. As the channels are FIFO (first-in-first-out), q received this marker message before receiving m. As per the algorithm's protocol, q took its snapshot upon receiving this marker message or earlier. Consequently, the receipt of m by q constitutes a post-shot event [Tel2001]_.
-
-    **Complexity:**
-
-    1. **Time Complexity**  The Chandy-Lamport :ref:`Algorithm <ChandyLamportSnapshotAlgorithm>` takes at most O(D) time units to complete where D is ...
-    2. **Message Complexity:** The Chandy-Lamport :ref:`Algorithm <ChandyLamportSnapshotAlgorithm>` requires 2|E| control messages.
-
-
-    **Lai-Yang Snapshot Algorithm:**
-
-    The Lai-Yang algorithm also captures a consistent global snapshot of a distributed system. Lai and Yang proposed a modification of Chandy-Lamport's algorithm for distributed snapshot on a network of processes where the channels need not be FIFO. ALGORTHM, FURTHER DETAILS
-
-.. [Fokking2013] Wan Fokkink, Distributed Algorithms An Intuitive Approach, The MIT Press Cambridge, Massachusetts London, England, 2013
-.. [Tel2001] Gerard Tel, Introduction to Distributed Algorithms, CAMBRIDGE UNIVERSITY PRESS, 2001
-.. [Lamport1985] Leslie Lamport, K. Mani Chandy: Distributed Snapshots: Determining Global States of a Distributed System. In: ACM Transactions on Computer Systems 3. Nr. 1, Februar 1985.
+Message complexity of the Safra's Algorithm is O(N^2) where N is the total number of processes.
