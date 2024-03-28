@@ -1,6 +1,6 @@
 .. include:: substitutions.rst
 
-|Rana's and Safra's Algorithm|
+|Rana-s and Safra-s Algorithm|
 =========================================
 
 
@@ -8,9 +8,15 @@
 Background and Related Work
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Present any background information survey the related work. Provide citations.
+Termination detection in distributed systems is a critical problem essential for ensuring system correctness and facilitating efficient resource management. In distributed computing environments, multiple processes collaborate to accomplish a common computational goal, making it challenging to determine when all processes have completed their tasks or have reached a stable state (Chandy & Misra, 1984). This problem is exacerbated by the asynchronous and decentralized nature of distributed systems, where processes operate independently and communication occurs over potentially unreliable networks.
 
-Distributed Algorithm: |Rana's and Safra's Algorithm| 
+Several termination detection algorithms have been proposed in the literature, each offering unique approaches to address the challenges of distributed termination detection. Chandy and Misra introduced the global snapshot algorithm, which captures a consistent global state of a distributed system to detect termination (Chandy & Misra, 1984). Similarly, Dijkstra proposed the Token-Based algorithm, where a token is passed among processes to track their progress and detect termination (Dijkstra, 1980). Additionally, Dijkstra and Scholten presented the Distributed Edge Marking algorithm, which uses message passing to detect termination in distributed systems (Dijkstra & Scholten, 1982).
+
+Rana's algorithm is one of the most important algorithms as a distributed solution for termination detection in distributed systems. Rana's algorithm leverages message passing among processes to systematically track the progress of computation and infer termination status through message exchanges. This algorithm offers a decentralized approach to termination detection, ensuring system correctness and facilitating efficient resource management.
+
+Safra's algorithm is another very important algorithm as a distributed solution for termination detection in distributed systems. Safra's algorithm combines message passing and set containment principles to construct a tree structure representing the execution of distributed computations. By analyzing specific patterns within this tree, the algorithm efficiently detects termination, signaling the completion of tasks across distributed processes. This algorithm offers a decentralized approach to termination detection, ensuring system correctness and facilitating efficient resource management.
+
+Distributed Algorithm: |Rana-s and Safra-s Algorithm| 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An example distributed algorithm for broadcasting on an undirected graph is presented in  :ref:`Algorithm <BlindFloodingAlgorithmLabel>`.

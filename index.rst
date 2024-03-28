@@ -12,7 +12,7 @@
    :maxdepth: 2
    :caption: Contents
 
-   docs/Rana-s_and_Safra-s_Algorithm/Rana's and Safra's Algorithm
+   docs/Rana-s_and_Safra-s_Algorithm/Rana-s_and_Safra-s_Algorithm
    docs/rubric
    docs/Rana-s_and_Safra-s_Algorithm/code
 

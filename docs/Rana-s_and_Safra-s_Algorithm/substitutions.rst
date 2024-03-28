@@ -1,2 +1,1 @@
-.. |Rana's and Safra's Algorithm| replace:: Distributed Algorithm Name 
-
+.. |Rana-s and Safra-s Algorithm| replace:: Rana's and Safra's Algorithm

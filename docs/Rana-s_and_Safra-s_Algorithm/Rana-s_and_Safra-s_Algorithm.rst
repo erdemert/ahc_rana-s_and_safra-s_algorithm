@@ -1,7 +1,7 @@
 .. include:: substitutions.rst
 
 ================================
-|Rana's and Safra's Algorithm|
+Rana's and Safra's Algorithm
 ================================
 
 
